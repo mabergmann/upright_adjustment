@@ -19,7 +19,7 @@ class Inference:
         mean = [0.485, 0.456, 0.406]
         std = [0.229, 0.224, 0.225]
 
-        resized_image_list = [cv2.resize(i, (224, 112)) for i in image_list]
+        resized_image_list = [cv2.resize(i, (442, 221)) for i in image_list]
         resized_image_list = np.asarray(resized_image_list).astype(np.float32)
         resized_image_list = resized_image_list[..., ::-1]
 
@@ -37,6 +37,5 @@ class Inference:
             output = self.model(batch)
 
         labels = output.cpu().detach().numpy()
-        labels = np.argmax(labels, axis=1)
 
         return list(labels)

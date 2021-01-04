@@ -14,7 +14,7 @@ class DenseNetUprightAdjustment(nn.Module):
 
     def forward(self, x):
         batch_size = x.shape[0]
-        x = self.features(x)
+        x = self.features(x).contiguous()
         x = x.view(batch_size, -1)
         x = self.regressor(x)
         x = F.normalize(x)
