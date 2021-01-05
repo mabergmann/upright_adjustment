@@ -7,7 +7,7 @@ from scipy.spatial.transform import Rotation as R
 from lib.inference import Inference
 from lib.rotation import synthesizeRotation
 
-test_folder = pl.Path("/home/mbergmann/PycharmProjects/upright_classification/data/SUN360_1024/test")
+test_folder = pl.Path("/home/pixforce/data/upright_adjustment/SUN360_1024/test")
 
 test_images_fnames = list(test_folder.glob ("*.jpg"))
 
@@ -15,8 +15,14 @@ inf = Inference("logs/best.th")
 
 errors_map = np.zeros((30, 60))
 
+errors_map = np.load("logs/errors.npy")
+
 for rx in range(-180, 180, 6):
     for ry in range(-90, 90, 6):
+        y, x = ry // 6 + 15, rx // 6 + 30
+
+        if errors_map[y, x] != 0:
+            continue
         for n, fname in enumerate(test_images_fnames):
             r = R.from_euler("zxy", [0, rx, ry], degrees=True)
             img = cv2.imread(str(fname))
@@ -27,8 +33,6 @@ for rx in range(-180, 180, 6):
 
             error = np.arccos(np.dot(out, expected))
             error = 180 * error / np.pi
-
-            y, x = ry//6 + 15, rx//6 + 30
 
             errors_map[y, x] += error
             if n == 99:  # Tests 100 image in each angle
