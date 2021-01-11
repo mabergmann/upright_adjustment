@@ -12,10 +12,11 @@ from lib.metrics import Metrics
 
 
 def main():
+    continue_train = True
     batch_size = 12
     batches_per_update = 4
-    max_epocs = 300
-    patience = 20
+    max_epocs = 200
+    patience = 50
     log_path = pl.Path("logs")
     log_path.mkdir(parents=True, exist_ok=True)
     model = get_model()
@@ -67,7 +68,11 @@ def main():
     best_epoch = -1
     best_val_metric = float("inf")
 
-    for epoch in range(1, max_epocs + 1):
+    if continue_train:
+        info = utils.load_model_with_meta(model, "logs/last.th", device, True)
+        best_val_metric = info["additional_info"]["val_main_metric"]
+
+    for epoch in range(63, max_epocs + 1):
         metric_accumulator.reset()
         model.train()
         mean_loss = 0.0
@@ -91,9 +96,9 @@ def main():
 
             mean_loss += total_loss.cpu().detach().numpy()
 
-            labels = output
+            gt_vector, output_vector = utils.angles_batch_to_vector_batch(gt), utils.angles_batch_to_vector_batch(output)
 
-            metric_accumulator.update(gt, labels)
+            metric_accumulator.update(gt_vector, output_vector)
 
         mean_loss /= len(train_loader)
 
@@ -110,8 +115,10 @@ def main():
             gt = gt.to(device)
             with torch.no_grad():
                 output = model(image_th)
-            labels = output
-            metric_accumulator.update(gt, labels)
+
+            gt_vector, output_vector = utils.angles_batch_to_vector_batch(gt), utils.angles_batch_to_vector_batch(output)
+
+            metric_accumulator.update(gt_vector, output_vector)
 
         val_main_metric = metric_accumulator.get_angular_error()
 
@@ -135,9 +142,9 @@ def main():
 
             best_epoch = epoch
 
-        if (epoch - best_epoch) > patience:
-            print("Finishing train")
-            break
+        # if (epoch - best_epoch) > patience:
+        #     print("Finishing train")
+        #     break
     
 
 if __name__ == '__main__':

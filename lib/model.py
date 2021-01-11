@@ -9,7 +9,7 @@ class DenseNetUprightAdjustment(nn.Module):
         densenet = torchvision.models.densenet121(pretrained=pretrained)
         self.features = densenet.features
         self.n_features = densenet.classifier.in_features
-        self.regressor = nn.Linear(93184, 3)
+        self.regressor = nn.Linear(93184, 2)
         self.parameters_list = list(self.parameters())
 
     def forward(self, x):

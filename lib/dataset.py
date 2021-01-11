@@ -2,7 +2,6 @@ from albumentations import Compose, GaussNoise, Blur, Normalize
 import cv2
 import numpy as np
 import pathlib as pl
-from scipy.spatial.transform import Rotation as R
 import torch
 from torch.utils.data import Dataset
 
@@ -53,8 +52,7 @@ class SUN360(Dataset):
 
         img_pt = torch.from_numpy(img_np).permute(2, 0, 1)
         rx, ry = self.gts[item]
-        r = R.from_euler('zxy', [0, rx, ry], degrees=True)
-        rot_np = r.apply(np.array([0, 0, 1]))
-        label = torch.from_numpy(rot_np).float()
+
+        label = torch.from_numpy(np.asarray([rx/180, ry/90])).float()
 
         return img_pt, label

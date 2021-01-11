@@ -1,5 +1,6 @@
 from datetime import datetime
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 import torch
 
 
@@ -28,6 +29,8 @@ def load_model_with_meta(model, path, device, verbose=False):
                     continue
                 print('%s: %s' % (key, item))
 
+    return loaded_torch
+
 
 def init_loader_seed(worker_id):
     """
@@ -35,3 +38,17 @@ def init_loader_seed(worker_id):
     :param worker_id: Matches the torch interface
     """
     np.random.seed(torch.initial_seed() % 2 ** 32)
+
+
+def angles_batch_to_vector_batch(angles_batch):
+    vector_batch = []
+    up_original = np.asarray([0, 0, 1])
+    for rx, ry in angles_batch:
+        new_rx = int(rx*180)
+        new_ry = int(ry*90)
+        r = R.from_euler('zxy', [0, new_rx, new_ry], degrees=True)
+        rot_np = r.apply(up_original)
+        vector_batch.append(rot_np)
+
+    vector_batch = torch.from_numpy(np.asarray(vector_batch))
+    return vector_batch

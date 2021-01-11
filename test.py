@@ -31,7 +31,7 @@ def main():
         gt = gt.to(device)
         with torch.no_grad():
             output = model(image_th)
-        labels = output
+        gt_vector, output_vector = utils.angles_batch_to_vector_batch(gt), utils.angles_batch_to_vector_batch(output)
 
         # for img, lbl in zip(image_th, labels):
         #     img = vis.tensor_to_image(img)
@@ -39,7 +39,7 @@ def main():
         #     cv2.imshow("", img)
         #     cv2.waitKey(0)
 
-        metric_accumulator.update(gt, labels)
+        metric_accumulator.update(gt_vector, output_vector)
 
     metric_accumulator.pretty_print("", None)
     metric_accumulator.plot_errors()
